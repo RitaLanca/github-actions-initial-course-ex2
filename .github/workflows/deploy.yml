@@ -8,12 +8,12 @@ env: # global context
     MONGODB_DB_NAME: gha-demo
 jobs:
   test:
+    environment: testing #set an environment for this job. then the secrets that will be used are the ones on environment testing
     env: # job context
       MONGODB_CLUSTER_ADDRESS: cluster0.pd7nrlr.mongodb.net
       MONGODB_USERNAME: ${{ secrets.MONGODB_USERNAME}}
       MONGODB_PASSWORD: ${{ secrets.MONGODB_PASSWORD}}
       PORT: 8080
-    environment: testing
     runs-on: ubuntu-latest
     steps:
       - name: Get Code
