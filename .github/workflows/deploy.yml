@@ -17,6 +17,8 @@ jobs:
       MONGODB_PASSWORD: ${{ secrets.MONGODB_PASSWORD}} # add secret on environment "testing" > environment secrets
       PORT: 8080
     runs-on: ubuntu-latest # running test job on ubunto machine provided by github actions
+    container: 
+      image: node # using node container. The image name is from docker hub repository
     steps:
       - name: Get Code
         uses: actions/checkout@v3
