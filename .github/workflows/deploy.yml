@@ -10,15 +10,34 @@ env: # global context
 jobs:
   test:
     environment: testing # on github, you can set an environment "testing" for this job. Then the secrets that will be used are the ones on environment testing
-    env: # job context
-      MONGODB_CONNECTION_PROTOCOL: mongodb+srv
-      MONGODB_CLUSTER_ADDRESS: cluster0.pd7nrlr.mongodb.net
-      MONGODB_USERNAME: ${{ secrets.MONGODB_USERNAME}} # add secret on environment "testing" > environment secrets
-      MONGODB_PASSWORD: ${{ secrets.MONGODB_PASSWORD}} # add secret on environment "testing" > environment secrets
-      PORT: 8080
     runs-on: ubuntu-latest # running test job on ubunto machine provided by github actions
-    container: 
-      image: node # using node container. The image name is from docker hub repository
+    container: # with this, the job is running in a container
+      image: node:16 # using node container. The image name is from docker hub repository
+
+    env: # job context
+
+      # protocol and adress to connect to mongodb on cloud
+      # MONGODB_CONNECTION_PROTOCOL: mongodb+srv
+      # MONGODB_CLUSTER_ADDRESS: cluster0.pd7nrlr.mongodb.net
+      # credentials to connect to mongodb on clound
+      # MONGODB_USERNAME: ${{ secrets.MONGODB_USERNAME}} # add secret on environment "testing" > environment secrets
+      # MONGODB_PASSWORD: ${{ secrets.MONGODB_PASSWORD}} # add secret on environment "testing" > environment secrets
+     
+      # credentials to connect with mongodb locally
+      MONGODB_CONNECTION_PROTOCOL: mongodb
+      MONGODB_CLUSTER_ADDRESS: mongodb_service # In case job is running in a container, GA will creates a network emvironment, where you can use the label of the service container as a connection address
+      MONGODB_USERNAME: root
+      MONGODB_PASSWORD: example
+      PORT: 8080
+
+    services: # declaring services container for the test job. In this case, we want to start a mongodb container while running testing job
+      mongodb_service: # label used to access the service container
+        image: mongo # services always runs in container, so we always have to add the base image (ex: from docker hub repository). In this case a new mongo db will be created
+        env:
+          # these are the credentials that will be used to connect to the mongodb. Here we are configuring the root user.
+          MONGO_INITDB_ROOT_USERNAME: root
+          MONGO_INITDB_ROOT_PASSWORD: example
+
     steps:
       - name: Get Code
         uses: actions/checkout@v3
@@ -40,7 +59,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Output information
-        run: |        
+        run: |
           echo "MONGODB_DB_NAME:" ${{ env.MONGODB_DB_NAME }}
           echo "MONGODB_DB_NAME:" $MONGODB_DB_NAME
           echo "PORT:" $PORT
