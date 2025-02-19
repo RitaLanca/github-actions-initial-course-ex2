@@ -11,8 +11,8 @@ jobs:
   test:
     environment: testing # on github, you can set an environment "testing" for this job. Then the secrets that will be used are the ones on environment testing
     runs-on: ubuntu-latest # running test job on ubunto machine provided by github actions
-    container: # with this, the job is running in a container
-      image: node:16 # using node container. The image name is from docker hub repository
+    # container: # with this, the job is running in a container
+    #   image: node:16 # using node container. The image name is from docker hub repository
 
     env: # job context
 
@@ -23,9 +23,16 @@ jobs:
       # MONGODB_USERNAME: ${{ secrets.MONGODB_USERNAME}} # add secret on environment "testing" > environment secrets
       # MONGODB_PASSWORD: ${{ secrets.MONGODB_PASSWORD}} # add secret on environment "testing" > environment secrets
      
-      # credentials to connect with mongodb locally
+      # credentials to connect with mongodb locally when running test job on a container
+      # MONGODB_CONNECTION_PROTOCOL: mongodb
+      # MONGODB_CLUSTER_ADDRESS: mongodb_service # In case job is running in a container, GA will creates a network emvironment, where you can use the label of the service container as a connection address
+      # MONGODB_USERNAME: root
+      # MONGODB_PASSWORD: example
+      # PORT: 8080
+
+      # credentials to connect with mongodb locally when running test job on the self hosted runner without a container
       MONGODB_CONNECTION_PROTOCOL: mongodb
-      MONGODB_CLUSTER_ADDRESS: mongodb_service # In case job is running in a container, GA will creates a network emvironment, where you can use the label of the service container as a connection address
+      MONGODB_CLUSTER_ADDRESS: 127.0.0.1:27017 # In case job not running in a container, you can use the localhost IP address and the port
       MONGODB_USERNAME: root
       MONGODB_PASSWORD: example
       PORT: 8080
@@ -33,6 +40,8 @@ jobs:
     services: # declaring services container for the test job. In this case, we want to start a mongodb container while running testing job
       mongodb_service: # label used to access the service container
         image: mongo # services always runs in container, so we always have to add the base image (ex: from docker hub repository). In this case a new mongo db will be created
+        ports: # Open the port 27017 of the service container
+          - 27017:27017 # mapping port 27017 of container to port 27017 of runner machine (host)
         env:
           # these are the credentials that will be used to connect to the mongodb. Here we are configuring the root user.
           MONGO_INITDB_ROOT_USERNAME: root
